@@ -1,5 +1,10 @@
+import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { getTrips } from "../../hooks/useTripHistory";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Route {
   label: string;
@@ -13,56 +18,106 @@ interface Route {
 }
 
 const ROUTES: Route[] = [
-  { label: "Mileage Calculator", sub: "Track your km per litre instantly", icon: "⛽", path: "/screens/MileageCalculator", color: "#c4b5fd", image: require("../../assets/images/img1.png") },
-  { label: "Fuel Calculator", sub: "Estimate your trip cost easily", icon: "⛽", path: "/screens/FuelCalculator", color: "#f96e6eff", image: require("../../assets/images/img2.png") },
-  { label: "Range Calculator", sub: "How far can you go today?", icon: "📍", path: "/screens/RangeCalculator", color: "#a29bb1ff", dark: true, image: require("../../assets/images/img3.png"), imgScale: 0.65 },
+  { label: "Mileage Calculator", sub: "Track your km per litre instantly", icon: "⛽", path: "/calculators/MileageCalculator", color: "#c4b5fd", image: require("../../assets/images/img1.png") },
+  { label: "Fuel Calculator", sub: "Estimate your trip cost easily", icon: "⛽", path: "/calculators/FuelCalculator", color: "#f96e6eff", image: require("../../assets/images/img2.png") },
+  { label: "Range Calculator", sub: "How far can you go today?", icon: "📍", path: "/calculators/RangeCalculator", color: "#a29bb1ff", dark: true, image: require("../../assets/images/img3.png"), imgScale: 0.65 },
 ];
 
 export default function Home() {
   const router = useRouter();
+  const [recentTrips, setRecentTrips] = useState<any[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadRecentTrips();
+    }, [])
+  );
+
+  const loadRecentTrips = async () => {
+    const data = await getTrips();
+    setRecentTrips(data.slice(0, 3)); // Only top 3
+  };
   return (
-    <View style={styles.container}>
-      {/* ── Header ── */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Hello there 👋</Text>
-          <Text style={styles.subGreeting}>Make your drive easy with us</Text>
+    <View style={styles.root}>
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Header ── */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>Welcome Rider!! 😎</Text>
+            <Text style={styles.subGreeting}>Make your drive easy with us</Text>
+          </View>
+          <View style={styles.avatar}>
+            <ExpoImage source={require("../../assets/images/helmet-svg.svg")} style={styles.avatarImage} contentFit="contain" />
+          </View>
         </View>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>⛽</Text>
-        </View>
-      </View>
 
-      {/* ── Calculator Banners ── */}
-      <View style={{ gap: 16 }}>
-        {ROUTES.map((route) => (
-          <Pressable
-            key={route.path}
-            onPress={() => router.push(route.path as any)}
-            style={({ pressed }) => [
-              styles.heroBanner,
-              { backgroundColor: route.color },
-              pressed && styles.heroBannerPressed,
-            ]}
-          >
-            <Image
-              source={route.image}
-              style={[styles.heroImage, route.imgScale ? { transform: [{ scale: route.imgScale }] } : undefined]}
-              resizeMode="contain"
-            />
-            <View style={styles.heroTextBlock}>
-              <Text style={[styles.heroTitle, route.dark && { color: "#fff" }]}>
-                {route.label.split(" ").join("\n")}
-              </Text>
-              <Text style={[styles.heroSub, route.dark && { color: "rgba(255,255,255,0.65)" }]}>
-                {route.sub}
-              </Text>
+        {/* ── Calculator Banners ── */}
+        <View style={{ gap: 16 }}>
+          {ROUTES.map((route) => (
+            <Pressable
+              key={route.path}
+              onPress={() => router.push(route.path as any)}
+              style={({ pressed }) => [
+                styles.heroBanner,
+                { backgroundColor: route.color },
+                pressed && styles.heroBannerPressed,
+              ]}
+            >
+              <Image
+                source={route.image}
+                style={[styles.heroImage, route.imgScale ? { transform: [{ scale: route.imgScale }] } : undefined]}
+                resizeMode="contain"
+              />
+              <View style={styles.heroTextBlock}>
+                <Text style={[styles.heroTitle, route.dark && { color: "#fff" }]}>
+                  {route.label.split(" ").join("\n")}
+                </Text>
+                <Text style={[styles.heroSub, route.dark && { color: "rgba(255,255,255,0.65)" }]}>
+                  {route.sub}
+                </Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* ── Recent Calculations ── */}
+        <View style={styles.recentSection}>
+          <View style={styles.recentHeader}>
+            <Text style={styles.recentTitle}>Recent Calculations</Text>
+            {recentTrips.length > 0 && (
+              <Pressable onPress={() => router.push("/history")}>
+                <Text style={styles.seeAll}>See History</Text>
+              </Pressable>
+            )}
+          </View>
+
+          {recentTrips.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Ionicons name="leaf-outline" size={24} color="#c4b5fd" />
+              <Text style={styles.emptyText}>No trips saved yet. Start calculating!</Text>
             </View>
-          </Pressable>
-        ))}
-      </View>
-
-
+          ) : (
+            <View style={styles.recentList}>
+              {recentTrips.map((trip) => (
+                <View key={trip.id} style={styles.recentCard}>
+                  <View style={[styles.recentTypeDot, { backgroundColor: '#7c3aed' }]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.recentMileage}>{trip.mileage} <Text style={{ fontSize: 10 }}>km/L</Text></Text>
+                    <Text style={styles.recentDate}>{trip.date}</Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.recentCost}>₹{trip.tripCost}</Text>
+                    <Text style={styles.recentDist}>{trip.distance} km</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -73,9 +128,8 @@ const BG = "#f3f0fa";           // creamy lavender background
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: BG,
     paddingHorizontal: 22,
+    paddingBottom: 110, // Space for custom tab bar
   },
 
   /* ── Header ── */
@@ -110,6 +164,11 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
+  },
+  avatarImage: {
+    width: 32,
+    height: 32,
+    resizeMode: 'contain',
   },
   avatarText: { fontSize: 20 },
 
@@ -152,5 +211,91 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     color: "rgba(45,27,105,0.65)",
+  },
+  root: {
+    flex: 1,
+    backgroundColor: BG,
+  },
+  card: {
+    borderRadius: 24,
+    overflow: "hidden",
+  },
+  recentSection: {
+    marginTop: 32,
+  },
+  recentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  recentTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#1a1033",
+  },
+  seeAll: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#7c3aed",
+  },
+  emptyCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    shadowColor: "#7c3aed",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: "#9588b8",
+    fontWeight: "500",
+  },
+  recentList: {
+    gap: 12,
+  },
+  recentCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    shadowColor: "#7c3aed",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  recentTypeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  recentMileage: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#1a1033",
+  },
+  recentDate: {
+    fontSize: 11,
+    color: "#9588b8",
+    fontWeight: "500",
+    marginTop: 2,
+  },
+  recentCost: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1a1033",
+  },
+  recentDist: {
+    fontSize: 11,
+    color: "#9588b8",
+    fontWeight: "600",
+    marginTop: 2,
   },
 });
