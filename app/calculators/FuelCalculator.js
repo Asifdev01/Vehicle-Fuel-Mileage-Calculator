@@ -1,7 +1,9 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { saveTrip } from '../../hooks/useTripHistory';
+import i18n from '../../translation';
 
 const CORAL = "#f96e6eff";
 const CORAL_DEEP = "#e14d4d";
@@ -16,16 +18,19 @@ export default function FuelCalculator() {
     const [distance, setDistance] = useState('');
     const [fuelPrice, setFuelPrice] = useState('');
     const [cost, setCost] = useState(null);
+    const [saved, setSaved] = useState(false);
 
     const mileageRef = useRef();
     const distanceRef = useRef();
     const fuelPriceRef = useRef();
+    const scrollRef = useRef();
 
     const handleReset = () => {
         setMileage('');
         setDistance('');
         setFuelPrice('');
         setCost(null);
+        setSaved(false);
     };
 
     useFocusEffect(
@@ -40,12 +45,17 @@ export default function FuelCalculator() {
         const p = parseFloat(fuelPrice);
 
         if (isNaN(m) || isNaN(d) || isNaN(p) || m <= 0 || d <= 0 || p <= 0) {
-            alert("Please enter valid numbers");
+            alert(i18n.t("pleaseEnterValidNumbers"));
             return;
         }
 
         const result = (d / m) * p;
         setCost(result.toFixed(2));
+        setSaved(false);
+
+        setTimeout(() => {
+            scrollRef.current?.scrollToEnd({ animated: true });
+        }, 150);
     };
 
     return (
@@ -54,6 +64,7 @@ export default function FuelCalculator() {
             style={{ flex: 1, backgroundColor: BG }}
         >
             <ScrollView
+                ref={scrollRef}
                 style={styles.container}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
@@ -66,19 +77,19 @@ export default function FuelCalculator() {
                         <Text style={styles.headerIcon}>←</Text>
                     </TouchableOpacity>
                     <View>
-                        <Text style={styles.title}>Fuel Calculator</Text>
-                        <Text style={styles.subtitle}>Estimate your trip cost</Text>
+                        <Text style={styles.title}>{i18n.t("fuelCalculator")}</Text>
+                        <Text style={styles.subtitle}>{i18n.t("estimateTripCost")}</Text>
                     </View>
                 </View>
                 <TouchableOpacity onPress={handleReset} activeOpacity={0.7}>
-                    <Text style={styles.resetText}>Reset</Text>
+                    <Text style={styles.resetText}>{i18n.t("reset")}</Text>
                 </TouchableOpacity>
             </View>
 
             <View style={styles.inputContainer}>
 
                 <View style={styles.inputWrapper}>
-                    <Text style={styles.inputLabel}>Vehicle Mileage</Text>
+                    <Text style={styles.inputLabel}>{i18n.t("vehicleMileage")}</Text>
                     <View style={styles.inputWithSuffix}>
                         <TextInput
                             ref={mileageRef}
@@ -97,7 +108,7 @@ export default function FuelCalculator() {
                 </View>
 
                 <View style={styles.inputWrapper}>
-                    <Text style={styles.inputLabel}>Distance</Text>
+                    <Text style={styles.inputLabel}>{i18n.t("distance")}</Text>
                     <View style={styles.inputWithSuffix}>
                         <TextInput
                             ref={distanceRef}
@@ -116,7 +127,7 @@ export default function FuelCalculator() {
                 </View>
 
                 <View style={styles.inputWrapper}>
-                    <Text style={styles.inputLabel}>Price Per Litre</Text>
+                    <Text style={styles.inputLabel}>{i18n.t("pricePerLitre")}</Text>
                     <View style={styles.inputWithSuffix}>
                         <TextInput
                             ref={fuelPriceRef}
@@ -136,35 +147,63 @@ export default function FuelCalculator() {
                 {cost !== null && (
                     <View style={styles.resultCard}>
                         <View style={styles.resultTag}>
-                            <Text style={styles.resultTagText}>ESTIMATE</Text>
+                            <Text style={styles.resultTagText}>{i18n.t("estimate")}</Text>
                         </View>
 
                         <Text style={styles.resultBigValue}>₹ {cost}</Text>
-                        <Text style={styles.resultBigUnit}>Total Fuel Cost</Text>
+                        <Text style={styles.resultBigUnit}>{i18n.t("totalFuelCost")}</Text>
 
                         <View style={styles.resultDivider} />
 
                         <View style={styles.resultSummaryRow}>
                             <View style={styles.resultSummaryItem}>
                                 <Text style={styles.resultSummaryValue}>{distance}</Text>
-                                <Text style={styles.resultSummaryLabel}>km</Text>
+                                <Text style={styles.resultSummaryLabel}>{i18n.t("km")}</Text>
                             </View>
                             <View style={styles.resultSummaryDot} />
                             <View style={styles.resultSummaryItem}>
                                 <Text style={styles.resultSummaryValue}>{mileage}</Text>
-                                <Text style={styles.resultSummaryLabel}>km/l</Text>
+                                <Text style={styles.resultSummaryLabel}>{i18n.t("kmPerLitre")}</Text>
                             </View>
                             <View style={styles.resultSummaryDot} />
                             <View style={styles.resultSummaryItem}>
                                 <Text style={styles.resultSummaryValue}>₹{fuelPrice}</Text>
-                                <Text style={styles.resultSummaryLabel}>per litre</Text>
+                                <Text style={styles.resultSummaryLabel}>{i18n.t("perLitre")}</Text>
                             </View>
                         </View>
+
+                        <TouchableOpacity
+                            style={[styles.saveButton, saved && styles.saveButtonDone]}
+                            activeOpacity={0.8}
+                            disabled={saved}
+                            onPress={async () => {
+                                const m = parseFloat(mileage);
+                                const d = parseFloat(distance);
+                                const p = parseFloat(fuelPrice);
+                                const fuelLiters = d / m;
+                                const c = fuelLiters * p;
+                                await saveTrip({
+                                    type: 'Fuel',
+                                    mileage: m.toFixed(2),
+                                    distance: d.toFixed(2),
+                                    fuel: fuelLiters.toFixed(2),
+                                    fuelPrice: p.toFixed(2),
+                                    tripCost: c.toFixed(2),
+                                    costPerKm: (c / d).toFixed(2),
+                                });
+                                setSaved(true);
+                                Alert.alert(i18n.t("tripSavedAlertTitle"), i18n.t("tripSavedAlertMessage"));
+                            }}
+                        >
+                            <Text style={styles.saveButtonText}>
+                                {saved ? i18n.t("tripSaved") : i18n.t("saveTripToHistory")}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 )}
 
                 <TouchableOpacity style={styles.button} onPress={fuelCost} activeOpacity={0.85}>
-                    <Text style={styles.buttonText}>Calculate Fuel</Text>
+                    <Text style={styles.buttonText}>{i18n.t("calculateFuel")}</Text>
                 </TouchableOpacity>
 
             </View>
@@ -357,6 +396,24 @@ const styles = StyleSheet.create({
         height: 4,
         borderRadius: 2,
         backgroundColor: CORAL_DARK,
+    },
+    saveButton: {
+        backgroundColor: CORAL_DEEP,
+        borderRadius: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        marginTop: 18,
+        width: '100%',
+        alignItems: 'center',
+    },
+    saveButtonDone: {
+        backgroundColor: '#10b981',
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '700',
+        letterSpacing: 0.3,
     },
 
     button: {

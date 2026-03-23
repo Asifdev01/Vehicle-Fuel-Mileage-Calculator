@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { saveTrip } from '../../hooks/useTripHistory';
+import i18n from '../../translation';
 
 const PURPLE = "#c4b5fd";
 const PURPLE_DEEP = "#7c3aed";
@@ -48,7 +49,7 @@ export default function MileageCalculator() {
         const r = parseFloat(refilAmount);
 
         if (isNaN(d) || isNaN(f) || isNaN(p) || isNaN(r) || f <= 0 || p <= 0 || r <= 0) {
-            alert("Please enter valid numbers");
+            alert(i18n.t("pleaseEnterValidNumbers"));
             return;
         }
 
@@ -90,21 +91,21 @@ export default function MileageCalculator() {
                             <Text style={styles.headerIcon}>←</Text>
                         </TouchableOpacity>
                         <View>
-                            <Text style={styles.title}>Mileage Calculator</Text>
-                            <Text style={styles.subtitle}>Metric Fuel Tracker</Text>
+                            <Text style={styles.title}>{i18n.t("mileageCalculator")}</Text>
+                            <Text style={styles.subtitle}>{i18n.t("metricFuelTracker")}</Text>
                         </View>
                     </View>
                     <TouchableOpacity onPress={handleReset} activeOpacity={0.7}>
-                        <Text style={styles.resetText}>Reset</Text>
+                        <Text style={styles.resetText}>{i18n.t("reset")}</Text>
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.sectionLabel}>DISTANCE INPUT</Text>
+                <Text style={styles.sectionLabel}>{i18n.t("distanceInput")}</Text>
 
                 <View style={styles.content}>
 
                     <View style={styles.inputWrapper}>
-                        <Text style={styles.inputLabel}>Distance Travelled</Text>
+                        <Text style={styles.inputLabel}>{i18n.t("distanceTravelled")}</Text>
                         <View style={styles.inputWithSuffix}>
                             <TextInput
                                 ref={distanceRef}
@@ -118,13 +119,13 @@ export default function MileageCalculator() {
                                 onSubmitEditing={() => fuelRef.current?.focus()}
                                 blurOnSubmit={false}
                             />
-                            <Text style={styles.suffix}>km</Text>
+                            <Text style={styles.suffix}>{i18n.t("km")}</Text>
                         </View>
                     </View>
 
                     <View style={styles.inputWrapper2}>
                         <View style={styles.inputWrapper3}>
-                            <Text style={styles.inputLabel}>Fuel Used</Text>
+                            <Text style={styles.inputLabel}>{i18n.t("fuel")}</Text>
                             <View style={styles.inputWithSuffix}>
                                 <TextInput
                                     ref={fuelRef}
@@ -142,7 +143,7 @@ export default function MileageCalculator() {
                             </View>
                         </View>
                         <View style={styles.inputWrapper3}>
-                            <Text style={styles.inputLabel}>Fuel Price</Text>
+                            <Text style={styles.inputLabel}>{i18n.t("fuelPrice")}</Text>
                             <View style={styles.inputWithSuffix}>
                                 <TextInput
                                     ref={fuelPriceRef}
@@ -162,7 +163,7 @@ export default function MileageCalculator() {
                     </View>
 
                     <View style={styles.inputWrapper}>
-                        <Text style={styles.inputLabel}>Total Refil Amount</Text>
+                        <Text style={styles.inputLabel}>{i18n.t("totalRefilAmount")}</Text>
                         <View style={styles.inputWithSuffix}>
                             <TextInput
                                 ref={refilAmountRef}
@@ -180,44 +181,44 @@ export default function MileageCalculator() {
                     </View>
 
                     <TouchableOpacity style={styles.button} onPress={calculateMilage} activeOpacity={0.85}>
-                        <Text style={styles.buttonText}>Calculate Mileage</Text>
+                        <Text style={styles.buttonText}>{i18n.t("calculateMileage")}</Text>
                     </TouchableOpacity>
 
                     {result !== null && (
                         <View style={styles.resultCard}>
                             <View style={styles.resultTag}>
-                                <Text style={styles.resultTagText}>Mileage</Text>
+                                <Text style={styles.resultTagText}>MILEAGE</Text>
                             </View>
 
                             <Text style={styles.resultBigValue}>{result.mileage}</Text>
-                            <Text style={styles.resultBigUnit}>km / litre</Text>
+                            <Text style={styles.resultBigUnit}>{i18n.t("kmPerLitreLong")}</Text>
 
                             <View style={styles.resultSecondary}>
-                                <Text style={styles.resultSecondaryText}>{result.lPer100} L / 100 km</Text>
+                                <Text style={styles.resultSecondaryText}>{result.lPer100} {i18n.t("lPer100Km")}</Text>
                             </View>
 
                             <View style={styles.resultDivider} />
 
-                            <Text style={styles.resultCostLabel}>TRIP COST</Text>
+                            <Text style={styles.resultCostLabel}>{i18n.t("tripCost")}</Text>
                             <Text style={styles.resultCostValue}>₹ {result.tripCost}</Text>
-                            <Text style={styles.resultCostSub}>₹ {result.costPerKm} / km</Text>
+                            <Text style={styles.resultCostSub}>₹ {result.costPerKm} {i18n.t("perKm")}</Text>
 
                             <View style={styles.resultDivider} />
 
                             <View style={styles.resultSummaryRow}>
                                 <View style={styles.resultSummaryItem}>
                                     <Text style={styles.resultSummaryValue}>{result.distance}</Text>
-                                    <Text style={styles.resultSummaryLabel}>km</Text>
+                                    <Text style={styles.resultSummaryLabel}>{i18n.t("km")}</Text>
                                 </View>
                                 <View style={styles.resultSummaryDot} />
                                 <View style={styles.resultSummaryItem}>
                                     <Text style={styles.resultSummaryValue}>{result.fuel}</Text>
-                                    <Text style={styles.resultSummaryLabel}>litres</Text>
+                                    <Text style={styles.resultSummaryLabel}>{i18n.t("litres")}</Text>
                                 </View>
                                 <View style={styles.resultSummaryDot} />
                                 <View style={styles.resultSummaryItem}>
                                     <Text style={styles.resultSummaryValue}>₹{result.fuelPrice}</Text>
-                                    <Text style={styles.resultSummaryLabel}>per litre</Text>
+                                    <Text style={styles.resultSummaryLabel}>{i18n.t("perLitre")}</Text>
                                 </View>
                             </View>
 
@@ -228,11 +229,11 @@ export default function MileageCalculator() {
                                 onPress={async () => {
                                     await saveTrip(result);
                                     setSaved(true);
-                                    Alert.alert('Saved!', 'Trip has been saved to history.');
+                                    Alert.alert(i18n.t("tripSavedAlertTitle"), i18n.t("tripSavedAlertMessage"));
                                 }}
                             >
                                 <Text style={styles.saveButtonText}>
-                                    {saved ? '✓ Trip Saved' : 'Save Trip to History'}
+                                    {saved ? i18n.t("tripSaved") : i18n.t("saveTripToHistory")}
                                 </Text>
                             </TouchableOpacity>
                         </View>

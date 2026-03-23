@@ -1,10 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useEffect, useState, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
 import { getTrips } from "../../hooks/useTripHistory";
-import { Ionicons } from "@expo/vector-icons";
+import i18n from "../../translation";
+
 
 interface Route {
   label: string;
@@ -18,9 +20,9 @@ interface Route {
 }
 
 const ROUTES: Route[] = [
-  { label: "Mileage Calculator", sub: "Track your km per litre instantly", icon: "⛽", path: "/calculators/MileageCalculator", color: "#c4b5fd", image: require("../../assets/images/img1.png") },
-  { label: "Fuel Calculator", sub: "Estimate your trip cost easily", icon: "⛽", path: "/calculators/FuelCalculator", color: "#f96e6eff", image: require("../../assets/images/img2.png") },
-  { label: "Range Calculator", sub: "How far can you go today?", icon: "📍", path: "/calculators/RangeCalculator", color: "#a29bb1ff", dark: true, image: require("../../assets/images/img3.png"), imgScale: 0.65 },
+  { label: i18n.t("mileageCalculator"), sub: i18n.t("trackYourKm"), icon: "⛽", path: "/calculators/MileageCalculator", color: "#c4b5fd", image: require("../../assets/images/img1.png") },
+  { label: i18n.t("fuelCalculator"), sub: i18n.t("estimateTripCost"), icon: "⛽", path: "/calculators/FuelCalculator", color: "#f96e6eff", image: require("../../assets/images/img2.png") },
+  { label: i18n.t("rangeCalculator"), sub: i18n.t("howFarCanYouGo"), icon: "📍", path: "/calculators/RangeCalculator", color: "#a29bb1ff", dark: true, image: require("../../assets/images/img3.png"), imgScale: 0.65 },
 ];
 
 export default function Home() {
@@ -39,15 +41,15 @@ export default function Home() {
   };
   return (
     <View style={styles.root}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Header ── */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Welcome Rider!! 😎</Text>
-            <Text style={styles.subGreeting}>Make your drive easy with us</Text>
+            <Text style={styles.greeting}>{i18n.t("welcomeRider")}</Text>
+            <Text style={styles.subGreeting}>{i18n.t("makeYourDriveEasy")}</Text>
           </View>
           <View style={styles.avatar}>
             <ExpoImage source={require("../../assets/images/helmet-svg.svg")} style={styles.avatarImage} contentFit="contain" />
@@ -86,10 +88,10 @@ export default function Home() {
         {/* ── Recent Calculations ── */}
         <View style={styles.recentSection}>
           <View style={styles.recentHeader}>
-            <Text style={styles.recentTitle}>Recent Calculations</Text>
+            <Text style={styles.recentTitle}>{i18n.t("recentCalculations")}</Text>
             {recentTrips.length > 0 && (
               <Pressable onPress={() => router.push("/history")}>
-                <Text style={styles.seeAll}>See History</Text>
+                <Text style={styles.seeAll}>{i18n.t("seeHistory")}</Text>
               </Pressable>
             )}
           </View>
@@ -97,7 +99,7 @@ export default function Home() {
           {recentTrips.length === 0 ? (
             <View style={styles.emptyCard}>
               <Ionicons name="leaf-outline" size={24} color="#c4b5fd" />
-              <Text style={styles.emptyText}>No trips saved yet. Start calculating!</Text>
+              <Text style={styles.emptyText}>{i18n.t("noTripsSaved")}</Text>
             </View>
           ) : (
             <View style={styles.recentList}>
@@ -105,12 +107,12 @@ export default function Home() {
                 <View key={trip.id} style={styles.recentCard}>
                   <View style={[styles.recentTypeDot, { backgroundColor: '#7c3aed' }]} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.recentMileage}>{trip.mileage} <Text style={{ fontSize: 10 }}>km/L</Text></Text>
+                    <Text style={styles.recentMileage}>{trip.mileage} <Text style={{ fontSize: 10 }}>{i18n.t("kmPerLitre")}</Text></Text>
                     <Text style={styles.recentDate}>{trip.date}</Text>
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={styles.recentCost}>₹{trip.tripCost}</Text>
-                    <Text style={styles.recentDist}>{trip.distance} km</Text>
+                    <Text style={styles.recentDist}>{trip.distance} {i18n.t("km")}</Text>
                   </View>
                 </View>
               ))}

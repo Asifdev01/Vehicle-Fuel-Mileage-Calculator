@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import {
   Alert,
+  Modal,
   ScrollView,
   Share,
   StyleSheet,
@@ -10,59 +11,69 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
+import i18n from '../../translation';
 
 const APP_VERSION = '1.0.2';
 
-const LANGUAGES = ['English', 'Hindi', 'Marathi', 'Tamil', 'Telugu'];
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'hi', label: 'हिन्दी (Hindi)' },
+  { code: 'od', label: 'ଓଡ଼ିଆ (Odia)' },
+  { code: 'malayalam', label: 'മലയാളം (Malayalam)' },
+  { code: 'bengali', label: 'বাংলা (Bengali)' },
+  { code: 'marathi', label: 'मराठी (Marathi)' },
+  { code: 'tamil', label: 'தமிழ் (Tamil)' },
+  { code: 'telugu', label: 'తెలుగు (Telugu)' },
+];
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { locale, changeLanguage } = useLanguage();
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message:
-          'Check out Mileage Calculator – track fuel, costs & range instantly! Download now 🚗⛽',
+        message: i18n.t("shareWithFriends") || '', 
       });
     } catch (e) {
-      Alert.alert('Error', 'Could not share the app.');
+      Alert.alert(i18n.t("error"), i18n.t("couldNotShare"));
     }
   };
 
   const handleLanguage = () => {
-    Alert.alert(
-      'Select Language',
-      'Choose your preferred language',
-      LANGUAGES.map((lang) => ({
-        text: lang,
-        onPress: () => Alert.alert('Language', `${lang} selected (coming soon)`),
-      }))
-    );
+    setModalVisible(true);
+  };
+
+  const handleSelectLanguage = (code: string) => {
+    changeLanguage(code);
+    setModalVisible(false);
   };
 
   const MENU_ITEMS = [
     {
       icon: 'language-outline' as const,
-      label: 'Language',
-      sub: 'Change app language',
+      label: i18n.t("language"),
+      sub: i18n.t("changeAppLanguage"),
       onPress: handleLanguage,
     },
     {
       icon: 'share-social-outline' as const,
-      label: 'Share with Friends',
-      sub: 'Spread the word!',
+      label: i18n.t("shareWithFriends"),
+      sub: i18n.t("spreadTheWord"),
       onPress: handleShare,
     },
     {
       icon: 'information-circle-outline' as const,
-      label: 'About Us',
-      sub: 'Learn more about us',
+      label: i18n.t("aboutUs"),
+      sub: i18n.t("learnMoreAboutUs"),
       onPress: () => router.push('/about' as any),
     },
     {
       icon: 'shield-checkmark-outline' as const,
-      label: 'Privacy Policy',
-      sub: 'Read our policy',
+      label: i18n.t("privacyPolicy"),
+      sub: i18n.t("readOurPolicy"),
       onPress: () => router.push('/privacy' as any),
     },
   ];
@@ -75,7 +86,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <Text style={styles.header}>Settings</Text>
+        <Text style={styles.header}>{i18n.t("settings")}</Text>
 
         {/* Menu Card */}
         <View style={styles.card}>
@@ -99,8 +110,45 @@ export default function SettingsScreen() {
         </View>
 
         {/* Version Footer */}
-        <Text style={styles.version}>App Version {APP_VERSION}</Text>
+        <Text style={styles.version}>{i18n.t("appVersion", { version: APP_VERSION })}</Text>
       </ScrollView>
+
+      {/* Language Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>{i18n.t("selectLanguage")}</Text>
+            <Text style={styles.modalSub}>{i18n.t("choosePreferredLanguage")}</Text>
+            
+            <ScrollView style={styles.languageList}>
+              {LANGUAGES.map((lang, index) => {
+                const isSelected = locale === lang.code;
+                return (
+                  <TouchableOpacity
+                    key={lang.code}
+                    style={[styles.languageOption, index < LANGUAGES.length - 1 && styles.rowBorder]}
+                    onPress={() => handleSelectLanguage(lang.code)}
+                  >
+                    <Text style={[styles.languageText, isSelected && styles.languageTextSelected]}>
+                      {lang.label}
+                    </Text>
+                    {isSelected && <Ionicons name="checkmark-circle" size={24} color="#7c3aed" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+            
+            <TouchableOpacity style={styles.modalCloseButton} onPress={() => setModalVisible(false)}>
+              <Text style={styles.modalCloseText}>{i18n.t("cancel")}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -173,5 +221,65 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     marginTop: 40,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    width: '100%',
+    maxHeight: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#7c3aed',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1a1033',
+    marginBottom: 4,
+  },
+  modalSub: {
+    fontSize: 14,
+    color: '#9588b8',
+    marginBottom: 20,
+  },
+  languageList: {
+    maxHeight: 300,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  languageText: {
+    fontSize: 16,
+    color: '#1a1033',
+    fontWeight: '500',
+  },
+  languageTextSelected: {
+    fontWeight: '700',
+    color: '#7c3aed',
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    backgroundColor: '#f3f0fa',
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#7c3aed',
   },
 });

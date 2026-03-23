@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { clearHistory, getTrips } from '../hooks/useTripHistory';
+import i18n from '../translation';
 
 export default function HistoryScreen() {
   const router = useRouter();
@@ -19,12 +20,12 @@ export default function HistoryScreen() {
 
   const handleClear = () => {
     Alert.alert(
-      'Clear History',
-      'Are you sure you want to delete all saved trips?',
+      i18n.t("clearHistoryTitle"),
+      i18n.t("clearHistoryMessage"),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: i18n.t("cancel"), style: 'cancel' },
         {
-          text: 'Delete All',
+          text: i18n.t("deleteAll"),
           style: 'destructive',
           onPress: async () => {
             await clearHistory();
@@ -39,7 +40,7 @@ export default function HistoryScreen() {
     <View style={styles.tripCard}>
       <View style={styles.tripHeader}>
         <View style={styles.tripTypeTag}>
-          <Text style={styles.tripTypeLabel}>Mileage Trip</Text>
+          <Text style={styles.tripTypeLabel}>{item.type ? (item.type === 'Fuel' ? i18n.t("fuelCalc") : i18n.t("rangeCalc")) : i18n.t("mileageCalc")}</Text>
         </View>
         <Text style={styles.tripDate}>{item.date}</Text>
       </View>
@@ -47,23 +48,23 @@ export default function HistoryScreen() {
       <View style={styles.tripMetrics}>
         <View style={styles.metricItem}>
           <Text style={styles.metricValue}>{item.mileage}</Text>
-          <Text style={styles.metricLabel}>km/L</Text>
+          <Text style={styles.metricLabel}>{i18n.t("kmPerLitre")}</Text>
         </View>
         <View style={styles.metricDivider} />
         <View style={styles.metricItem}>
-          <Text style={styles.metricValue}>₹{item.tripCost}</Text>
-          <Text style={styles.metricLabel}>Cost</Text>
+          <Text style={styles.metricValue}>{item.tripCost ? `₹${item.tripCost}` : 'N/A'}</Text>
+          <Text style={styles.metricLabel}>{i18n.t("cost")}</Text>
         </View>
         <View style={styles.metricDivider} />
         <View style={styles.metricItem}>
           <Text style={styles.metricValue}>{item.distance}</Text>
-          <Text style={styles.metricLabel}>km</Text>
+          <Text style={styles.metricLabel}>{i18n.t("km")}</Text>
         </View>
       </View>
 
       <View style={styles.tripFooter}>
         <Text style={styles.tripFooterText}>
-          {item.fuel}L @ ₹{item.fuelPrice}/L • ₹{item.costPerKm}/km
+          {item.fuel}L{item.fuelPrice ? ` @ ₹${item.fuelPrice}/L` : ''}{item.costPerKm ? ` • ₹${item.costPerKm}/km` : ''}
         </Text>
       </View>
     </View>
@@ -76,10 +77,10 @@ export default function HistoryScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1a1033" />
         </TouchableOpacity>
-        <Text style={styles.title}>All History</Text>
+        <Text style={styles.title}>{i18n.t("allHistory")}</Text>
         {trips.length > 0 && (
           <TouchableOpacity onPress={handleClear}>
-            <Text style={styles.clearText}>Clear</Text>
+            <Text style={styles.clearText}>{i18n.t("clear")}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -95,8 +96,8 @@ export default function HistoryScreen() {
             <View style={styles.emptyIconCircle}>
               <Ionicons name="receipt-outline" size={32} color="#c4b5fd" />
             </View>
-            <Text style={styles.emptyTitle}>No history yet</Text>
-            <Text style={styles.emptySub}>Your saved calculations will appear here</Text>
+            <Text style={styles.emptyTitle}>{i18n.t("noHistoryYet")}</Text>
+            <Text style={styles.emptySub}>{i18n.t("savedCalculationsAppearHere")}</Text>
           </View>
         }
       />

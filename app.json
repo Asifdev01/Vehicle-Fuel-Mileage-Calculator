@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mileage Calculator",
     "slug": "milage-app",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/mipmap-xxxhdpi/ic_launcher.png",
     "scheme": "milageapp",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "icon": "./assets/images/mipmap-xxxhdpi/ic_launcher.png",
-      "buildNumber": "4"
+      "buildNumber": "5"
     },
     "android": {
       "icon": "./assets/images/mipmap-xxxhdpi/ic_launcher.png",
@@ -28,7 +28,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.asifansari.mileagecalculator",
-      "versionCode": 4
+      "versionCode": 5
     },
     "web": {
       "output": "static",
@@ -47,7 +47,8 @@
             "backgroundColor": "#09090E"
           }
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

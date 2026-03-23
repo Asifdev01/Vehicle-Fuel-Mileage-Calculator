@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import i18n from '../translation';
 
 const { width } = Dimensions.get('window');
 
@@ -78,7 +79,7 @@ export default function CustomTabBar({ state, descriptors, navigation }) {
                   color={isFocused ? '#000000ff' : '#9588b8'}
                 />
                 <Text style={[styles.tabLabel, { color: isFocused ? '#f96e6eff' : '#9588b8' }]}>
-                  {route.name === 'index' ? 'Home' : 'Settings'}
+                  {route.name === 'index' ? i18n.t("home") : i18n.t("settings")}
                 </Text>
               </TouchableOpacity>
             );

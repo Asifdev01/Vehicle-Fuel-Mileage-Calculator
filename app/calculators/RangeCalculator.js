@@ -1,7 +1,9 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { saveTrip } from '../../hooks/useTripHistory';
+import i18n from '../../translation';
 
 const SILVER = "#a29bb1ff";
 const SILVER_DEEP = "#7c748c";
@@ -14,15 +16,23 @@ export default function RangeCalculator() {
 
     const [fuelQuantity, setFuelQuantity] = useState('');
     const [vehicalMileage, setVehicalMileage] = useState('');
+    const [fuelPrice, setFuelPrice] = useState('');
     const [range, setRange] = useState(null);
+    const [fuelCost, setFuelCost] = useState(null);
+    const [saved, setSaved] = useState(false);
 
     const fuelQuantityRef = useRef();
     const vehicalMileageRef = useRef();
+    const fuelPriceRef = useRef();
+    const scrollRef = useRef();
 
     const handleReset = () => {
         setFuelQuantity('');
         setVehicalMileage('');
+        setFuelPrice('');
         setRange(null);
+        setFuelCost(null);
+        setSaved(false);
     };
 
     useFocusEffect(
@@ -34,14 +44,22 @@ export default function RangeCalculator() {
     const fuelRange = () => {
         const m = parseFloat(vehicalMileage);
         const f = parseFloat(fuelQuantity);
+        const p = parseFloat(fuelPrice);
 
-        if (isNaN(m) || isNaN(f) || m <= 0 || f <= 0) {
+        if (isNaN(m) || isNaN(f) || isNaN(p) || m <= 0 || f <= 0 || p <= 0) {
             alert("Please enter valid numbers");
             return;
         }
 
-        const result = f * m;
-        setRange(result.toFixed(2));
+        const calculatedRange = f * m;
+        const calculatedCost = f * p;
+        setRange(calculatedRange.toFixed(2));
+        setFuelCost(calculatedCost.toFixed(2));
+        setSaved(false);
+
+        setTimeout(() => {
+            scrollRef.current?.scrollToEnd({ animated: true });
+        }, 150);
     };
 
     return (
@@ -50,96 +68,162 @@ export default function RangeCalculator() {
             style={{ flex: 1, backgroundColor: BG }}
         >
             <ScrollView
+                ref={scrollRef}
                 style={styles.container}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={{ paddingBottom: 150 }}
             >
 
-            <View style={styles.header}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 }}>
-                    <TouchableOpacity onPress={() => router.push("/")} style={styles.headerIconBox} activeOpacity={0.7}>
-                        <Text style={styles.headerIcon}>←</Text>
+                <View style={styles.header}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 }}>
+                        <TouchableOpacity onPress={() => router.push("/")} style={styles.headerIconBox} activeOpacity={0.7}>
+                            <Text style={styles.headerIcon}>←</Text>
+                        </TouchableOpacity>
+                        <View>
+                            <Text style={styles.title}>{i18n.t("rangeCalculator")}</Text>
+                            <Text style={styles.subtitle}>{i18n.t("howFarCanYouGo")}</Text>
+                        </View>
+                    </View>
+                    <TouchableOpacity onPress={handleReset} activeOpacity={0.7}>
+                        <Text style={styles.resetText}>{i18n.t("reset")}</Text>
                     </TouchableOpacity>
-                    <View>
-                        <Text style={styles.title}>Range Calculator</Text>
-                        <Text style={styles.subtitle}>How far can you go?</Text>
-                    </View>
-                </View>
-                <TouchableOpacity onPress={handleReset} activeOpacity={0.7}>
-                    <Text style={styles.resetText}>Reset</Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.content}>
-
-                <View style={styles.inputWrapper}>
-                    <Text style={styles.inputLabel}>Fuel Quantity</Text>
-                    <View style={styles.inputWithSuffix}>
-                        <TextInput
-                            ref={fuelQuantityRef}
-                            style={styles.inputBare}
-                            placeholder="e.g. 3"
-                            placeholderTextColor="#dcd9d9ff"
-                            keyboardType="numeric"
-                            value={fuelQuantity}
-                            onChangeText={setFuelQuantity}
-                            returnKeyType="next"
-                            onSubmitEditing={() => vehicalMileageRef.current?.focus()}
-                            blurOnSubmit={false}
-                        />
-                        <Text style={styles.suffix}>L</Text>
-                    </View>
                 </View>
 
-                <View style={styles.inputWrapper}>
-                    <Text style={styles.inputLabel}>Vehicle Mileage</Text>
-                    <View style={styles.inputWithSuffix}>
-                        <TextInput
-                            ref={vehicalMileageRef}
-                            style={styles.inputBare}
-                            placeholder="e.g. 34.24"
-                            placeholderTextColor="#dcd9d9ff"
-                            keyboardType="numeric"
-                            value={vehicalMileage}
-                            onChangeText={setVehicalMileage}
-                            returnKeyType="done"
-                            onSubmitEditing={fuelRange}
-                        />
-                        <Text style={styles.suffix}>km/l</Text>
-                    </View>
-                </View>
+                <View style={styles.content}>
 
-                {range !== null && (
-                    <View style={styles.resultCard}>
-                        <View style={styles.resultTag}>
-                            <Text style={styles.resultTagText}>RANGE</Text>
-                        </View>
-
-                        <Text style={styles.resultBigValue}>{range}</Text>
-                        <Text style={styles.resultBigUnit}>kilometers</Text>
-
-                        <View style={styles.resultDivider} />
-
-                        <View style={styles.resultSummaryRow}>
-                            <View style={styles.resultSummaryItem}>
-                                <Text style={styles.resultSummaryValue}>{fuelQuantity}</Text>
-                                <Text style={styles.resultSummaryLabel}>litres</Text>
-                            </View>
-                            <View style={styles.resultSummaryDot} />
-                            <View style={styles.resultSummaryItem}>
-                                <Text style={styles.resultSummaryValue}>{vehicalMileage}</Text>
-                                <Text style={styles.resultSummaryLabel}>km/l</Text>
-                            </View>
+                    <View style={styles.inputWrapper}>
+                        <Text style={styles.inputLabel}>{i18n.t("fuelQuantity")}</Text>
+                        <View style={styles.inputWithSuffix}>
+                            <TextInput
+                                ref={fuelQuantityRef}
+                                style={styles.inputBare}
+                                placeholder="e.g. 3"
+                                placeholderTextColor="#dcd9d9ff"
+                                keyboardType="numeric"
+                                value={fuelQuantity}
+                                onChangeText={setFuelQuantity}
+                                returnKeyType="next"
+                                onSubmitEditing={() => vehicalMileageRef.current?.focus()}
+                                blurOnSubmit={false}
+                            />
+                            <Text style={styles.suffix}>L</Text>
                         </View>
                     </View>
-                )}
 
-                <TouchableOpacity style={styles.button} onPress={fuelRange} activeOpacity={0.85}>
-                    <Text style={styles.buttonText}>Calculate Range</Text>
-                </TouchableOpacity>
+                    <View style={styles.inputWrapper}>
+                        <Text style={styles.inputLabel}>{i18n.t("vehicleMileage")}</Text>
+                        <View style={styles.inputWithSuffix}>
+                            <TextInput
+                                ref={vehicalMileageRef}
+                                style={styles.inputBare}
+                                placeholder="e.g. 34.24"
+                                placeholderTextColor="#dcd9d9ff"
+                                keyboardType="numeric"
+                                value={vehicalMileage}
+                                onChangeText={setVehicalMileage}
+                                returnKeyType="next"
+                                onSubmitEditing={() => fuelPriceRef.current?.focus()}
+                                blurOnSubmit={false}
+                            />
+                            <Text style={styles.suffix}>km/l</Text>
+                        </View>
+                    </View>
 
-            </View>
+                    <View style={styles.inputWrapper}>
+                        <Text style={styles.inputLabel}>{i18n.t("fuelPrice")}</Text>
+                        <View style={styles.inputWithSuffix}>
+                            <TextInput
+                                ref={fuelPriceRef}
+                                style={styles.inputBare}
+                                placeholder="e.g. 106.4"
+                                placeholderTextColor="#dcd9d9ff"
+                                keyboardType="numeric"
+                                value={fuelPrice}
+                                onChangeText={setFuelPrice}
+                                returnKeyType="done"
+                                onSubmitEditing={fuelRange}
+                            />
+                            <Text style={styles.suffix}>₹</Text>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        style={[styles.button, (!fuelQuantity || !vehicalMileage || !fuelPrice) && { opacity: 0.6 }]}
+                        onPress={fuelRange}
+                        activeOpacity={0.85}
+                        disabled={!fuelQuantity || !vehicalMileage || !fuelPrice}
+                    >
+                        <Text style={styles.buttonText}>{i18n.t("calculateRange")}</Text>
+                    </TouchableOpacity>
+
+                    {range !== null && (
+                        <View style={[styles.resultCard, { marginTop: 14 }]}>
+                            <View style={styles.resultTag}>
+                                <Text style={styles.resultTagText}>{i18n.t("results")}</Text>
+                            </View>
+
+                            <Text style={styles.resultBigValue}>{range}</Text>
+                            <Text style={styles.resultBigUnit}>{i18n.t("kilometers")}</Text>
+
+                            <View style={{ backgroundColor: '#e2e2e8', padding: 14, borderRadius: 12, width: '100%', marginTop: 12 }}>
+                                {/* <Text style={{ fontSize: 15, color: '#1a1033', fontWeight: '600', textAlign: 'center' }}>
+                                    {i18n.t("travelUpTo", { range: range })}
+                                </Text> */}
+                                <Text style={{ fontSize: 15, color: '#1a1033', fontWeight: '600', textAlign: 'center', marginTop: 8 }}>
+                                    {i18n.t("estimatedFuelCost", { cost: fuelCost })}
+                                </Text>
+                            </View>
+
+                            <View style={styles.resultDivider} />
+
+                            <View style={styles.resultSummaryRow}>
+                                <View style={styles.resultSummaryItem}>
+                                    <Text style={styles.resultSummaryValue}>{fuelQuantity}</Text>
+                                    <Text style={styles.resultSummaryLabel}>{i18n.t("litres")}</Text>
+                                </View>
+                                <View style={styles.resultSummaryDot} />
+                                <View style={styles.resultSummaryItem}>
+                                    <Text style={styles.resultSummaryValue}>{vehicalMileage}</Text>
+                                    <Text style={styles.resultSummaryLabel}>{i18n.t("kmPerLitre")}</Text>
+                                </View>
+                                <View style={styles.resultSummaryDot} />
+                                <View style={styles.resultSummaryItem}>
+                                    <Text style={styles.resultSummaryValue}>₹{fuelPrice}</Text>
+                                    <Text style={styles.resultSummaryLabel}>{i18n.t("perLitre")}</Text>
+                                </View>
+                            </View>
+
+                            <TouchableOpacity
+                                style={[styles.saveButton, saved && styles.saveButtonDone]}
+                                activeOpacity={0.8}
+                                disabled={saved}
+                                onPress={async () => {
+                                    const m = parseFloat(vehicalMileage);
+                                    const f = parseFloat(fuelQuantity);
+                                    const p = parseFloat(fuelPrice);
+                                    const r = f * m;
+                                    const c = f * p;
+                                    await saveTrip({
+                                        type: 'Range',
+                                        mileage: m.toFixed(2),
+                                        fuel: f.toFixed(2),
+                                        fuelPrice: p.toFixed(2),
+                                        tripCost: c.toFixed(2),
+                                        distance: r.toFixed(2),
+                                    });
+                                    setSaved(true);
+                                    Alert.alert(i18n.t("tripSavedAlertTitle"), i18n.t("tripSavedAlertMessage"));
+                                }}
+                            >
+                                <Text style={styles.saveButtonText}>
+                                    {saved ? i18n.t("tripSaved") : i18n.t("saveTripToHistory")}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                </View>
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -327,6 +411,24 @@ const styles = StyleSheet.create({
         height: 4,
         borderRadius: 2,
         backgroundColor: SILVER_DARK,
+    },
+    saveButton: {
+        backgroundColor: SILVER_DEEP,
+        borderRadius: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        marginTop: 18,
+        width: '100%',
+        alignItems: 'center',
+    },
+    saveButtonDone: {
+        backgroundColor: '#10b981',
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '700',
+        letterSpacing: 0.3,
     },
 
     button: {
