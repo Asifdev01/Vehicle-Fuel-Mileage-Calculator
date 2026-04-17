@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import Constants from 'expo-constants';
 import {
   Alert,
   Modal,
@@ -14,7 +15,7 @@ import {
 import { useLanguage } from '../../context/LanguageContext';
 import i18n from '../../translation';
 
-const APP_VERSION = '1.0.2';
+const APP_VERSION = Constants.expoConfig?.version || '1.0.4';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -35,7 +36,7 @@ export default function SettingsScreen() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: i18n.t("shareWithFriends") || '', 
+        message: `${i18n.t("shareWithFriends")}\n\nDownload our Android app here: https://expo.dev/artifacts/eas/cj4MrVTdUShM5i8Poab4bY.apk`, 
       });
     } catch (e) {
       Alert.alert(i18n.t("error"), i18n.t("couldNotShare"));

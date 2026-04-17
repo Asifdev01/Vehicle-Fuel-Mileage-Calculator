@@ -1,0 +1,56 @@
+# Vehicle Fuel Mileage Calculator - App Analysis
+
+## 1. Overview
+The "Vehicle Fuel Mileage Calculator" is a mobile application built with React Native and Expo. It provides users with essential tools to track and estimate their vehicle's fuel efficiency, trip costs, and driving range.
+
+## 2. Core Functionality (What it does)
+The app features three primary calculators:
+- **Mileage Calculator**: Calculates the actual mileage of a vehicle based on a recent trip.
+- **Fuel Calculator**: Estimates the total cost of a planned trip.
+- **Range Calculator**: Predicts how far a vehicle can travel with a specific amount of fuel.
+- **Trip History**: Saves previous calculations locally so users can track their fuel performance over time.
+
+---
+
+## 3. Technical Implementation (How it does it)
+
+### A. Mileage Calculator
+- **Logic**: 
+  - `Mileage (km/l) = Distance Travelled / Fuel Consumed`
+  - `Litres per 100km = (Fuel Consumed / Distance Travelled) * 100`
+  - `Trip Cost = Fuel Consumed * Fuel Price`
+  - `Cost per km = Trip Cost / Distance Travelled`
+- **Readings (Inputs)**: 
+  - Distance Travelled (km)
+  - Fuel Volume (Litres)
+  - Fuel Price (Currency/L)
+  - Total Refill Amount (Currency)
+
+### B. Fuel Calculator
+- **Logic**:
+  - `Total Trip Cost = (Trip Distance / Vehicle Mileage) * Fuel Price`
+- **Readings (Inputs)**:
+  - Vehicle Mileage (km/l)
+  - Planned Distance (km)
+  - Current Fuel Price (Currency/L)
+
+### C. Range Calculator
+- **Logic**:
+  - `Range (km) = Fuel Quantity * Vehicle Mileage`
+  - `Estimated Fuel Cost = Fuel Quantity * Fuel Price`
+- **Readings (Inputs)**:
+  - Fuel Quantity (Litres)
+  - Vehicle Mileage (km/l)
+  - Current Fuel Price (Currency/L)
+
+---
+
+## 4. Data Storage & Persistence
+- **Storage**: The app uses `@react-native-async-storage/async-storage` for data persistence.
+- **Mechanism**: Calculations are saved as "Trip" objects in a JSON array under the key `@trip_history`.
+- **Fields Stored**: ID, Date, Type (Mileage/Fuel/Range), Mileage, Distance, Fuel, Fuel Price, Trip Cost, Cost per km.
+
+## 5. User Interface & Experience
+- **Navigation**: Uses `expo-router` for file-based routing and a custom bottom tab bar for easy switching between Home and History.
+- **Design**: Modern UI with a soft color palette (lavender/coral), custom cards, and responsive input fields.
+- **Localization**: Implements a translation system (`translation.js`) supporting multiple languages (likely English and Hindi based on the currency symbols and context).

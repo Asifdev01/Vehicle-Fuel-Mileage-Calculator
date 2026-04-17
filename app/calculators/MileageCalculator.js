@@ -15,48 +15,39 @@ export default function MileageCalculator() {
     const router = useRouter();
 
     const [distance, setDistance] = useState('');
-    const [fuel, setFuel] = useState('');
     const [fuelPrice, setFuelPrice] = useState('');
     const [refilAmount, setRefilAmount] = useState('');
     const [result, setResult] = useState(null);
     const [saved, setSaved] = useState(false);
 
     const distanceRef = useRef();
-    const fuelRef = useRef();
     const fuelPriceRef = useRef();
     const refilAmountRef = useRef();
     const scrollRef = useRef();
 
     const handleReset = () => {
         setDistance('');
-        setFuel('');
         setFuelPrice('');
         setRefilAmount('');
         setResult(null);
         setSaved(false);
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            handleReset();
-        }, [])
-    );
-
     const calculateMilage = () => {
         const d = parseFloat(distance);
-        const f = parseFloat(fuel);
         const p = parseFloat(fuelPrice);
         const r = parseFloat(refilAmount);
 
-        if (isNaN(d) || isNaN(f) || isNaN(p) || isNaN(r) || f <= 0 || p <= 0 || r <= 0) {
+        if (isNaN(d) || isNaN(p) || isNaN(r) || d <= 0 || p <= 0 || r <= 0) {
             alert(i18n.t("pleaseEnterValidNumbers"));
             return;
         }
 
-        const mileage = d / f;
-        const lPer100 = (f / d) * 100;
-        const tripCost = f * p;
-        const costPerKm = tripCost / d;
+        const fuelUsed = r / p;
+        const mileage = d / fuelUsed;
+        const lPer100 = (fuelUsed / d) * 100;
+        const tripCost = r;
+        const costPerKm = r / d;
 
         setResult({
             mileage: mileage.toFixed(2),
@@ -64,7 +55,7 @@ export default function MileageCalculator() {
             tripCost: tripCost.toFixed(2),
             costPerKm: costPerKm.toFixed(2),
             distance: d,
-            fuel: f,
+            fuel: fuelUsed.toFixed(2),
             fuelPrice: p,
         });
 
@@ -116,49 +107,29 @@ export default function MileageCalculator() {
                                 value={distance}
                                 onChangeText={setDistance}
                                 returnKeyType="next"
-                                onSubmitEditing={() => fuelRef.current?.focus()}
+                                onSubmitEditing={() => fuelPriceRef.current?.focus()}
                                 blurOnSubmit={false}
                             />
                             <Text style={styles.suffix}>{i18n.t("km")}</Text>
                         </View>
                     </View>
 
-                    <View style={styles.inputWrapper2}>
-                        <View style={styles.inputWrapper3}>
-                            <Text style={styles.inputLabel}>{i18n.t("fuel")}</Text>
-                            <View style={styles.inputWithSuffix}>
-                                <TextInput
-                                    ref={fuelRef}
-                                    style={styles.inputBare}
-                                    placeholder="e.g. 10"
-                                    placeholderTextColor="#e0dbf4ff"
-                                    keyboardType="numeric"
-                                    value={fuel}
-                                    onChangeText={setFuel}
-                                    returnKeyType="next"
-                                    onSubmitEditing={() => fuelPriceRef.current?.focus()}
-                                    blurOnSubmit={false}
-                                />
-                                <Text style={styles.suffix}>L</Text>
-                            </View>
-                        </View>
-                        <View style={styles.inputWrapper3}>
-                            <Text style={styles.inputLabel}>{i18n.t("fuelPrice")}</Text>
-                            <View style={styles.inputWithSuffix}>
-                                <TextInput
-                                    ref={fuelPriceRef}
-                                    style={styles.inputBare}
-                                    placeholder="e.g. 106.4"
-                                    placeholderTextColor="#e0dbf4ff"
-                                    keyboardType="numeric"
-                                    value={fuelPrice}
-                                    onChangeText={setFuelPrice}
-                                    returnKeyType="next"
-                                    onSubmitEditing={() => refilAmountRef.current?.focus()}
-                                    blurOnSubmit={false}
-                                />
-                                <Text style={styles.suffix}>₹</Text>
-                            </View>
+                    <View style={styles.inputWrapper}>
+                        <Text style={styles.inputLabel}>{i18n.t("fuelPrice")}</Text>
+                        <View style={styles.inputWithSuffix}>
+                            <TextInput
+                                ref={fuelPriceRef}
+                                style={styles.inputBare}
+                                placeholder="e.g. 106.4"
+                                placeholderTextColor="#e0dbf4ff"
+                                keyboardType="numeric"
+                                value={fuelPrice}
+                                onChangeText={setFuelPrice}
+                                returnKeyType="next"
+                                onSubmitEditing={() => refilAmountRef.current?.focus()}
+                                blurOnSubmit={false}
+                            />
+                            <Text style={styles.suffix}>₹</Text>
                         </View>
                     </View>
 
@@ -179,6 +150,10 @@ export default function MileageCalculator() {
                             <Text style={styles.suffix}>₹</Text>
                         </View>
                     </View>
+                    
+                    <Text style={styles.helperText}>
+                        Enter the amount of fuel filled after completing the trip for accurate mileage calculation.
+                    </Text>
 
                     <TouchableOpacity style={styles.button} onPress={calculateMilage} activeOpacity={0.85}>
                         <Text style={styles.buttonText}>{i18n.t("calculateMileage")}</Text>
@@ -227,7 +202,7 @@ export default function MileageCalculator() {
                                 activeOpacity={0.8}
                                 disabled={saved}
                                 onPress={async () => {
-                                    await saveTrip(result);
+                                    await saveTrip({ ...result, type: 'Mileage' });
                                     setSaved(true);
                                     Alert.alert(i18n.t("tripSavedAlertTitle"), i18n.t("tripSavedAlertMessage"));
                                 }}
@@ -319,29 +294,6 @@ const styles = StyleSheet.create({
         gap: 6,
     },
 
-    inputWrapper3: {
-        flex: 1,
-        flexDirection: "column",
-        gap: 6,
-    },
-
-
-    inputWrapper2: {
-        backgroundColor: "#fff",
-        borderRadius: 20,
-        paddingVertical: 18,
-        paddingHorizontal: 18,
-        shadowColor: "#7c3aed",
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 2,
-        gap: 12,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-    },
-
     inputLabel: {
         fontSize: 11,
         fontWeight: "700",
@@ -391,6 +343,16 @@ const styles = StyleSheet.create({
 
     inputSpaced: {
         marginBottom: 8,
+    },
+    
+    helperText: {
+        fontSize: 12,
+        fontWeight: "500",
+        color: "#9588b8",
+        textAlign: "center",
+        paddingHorizontal: 10,
+        marginTop: 4,
+        lineHeight: 18,
     },
 
     resultCard: {

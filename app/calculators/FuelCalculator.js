@@ -33,11 +33,7 @@ export default function FuelCalculator() {
         setSaved(false);
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            handleReset();
-        }, [])
-    );
+    // Removed useFocusEffect that forces handleReset here to prevent state loss on tab switch
 
     const fuelCost = () => {
         const m = parseFloat(mileage);

@@ -35,11 +35,7 @@ export default function RangeCalculator() {
         setSaved(false);
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            handleReset();
-        }, [])
-    );
+    // Removed useFocusEffect that forces handleReset here to prevent state loss on tab switch
 
     const fuelRange = () => {
         const m = parseFloat(vehicalMileage);

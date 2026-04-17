@@ -1,7 +1,7 @@
 {
   "name": "milage-app",
   "main": "expo-router/entry",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "scripts": {
     "start": "expo start",
     "dev": "expo start",
@@ -11,7 +11,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "prepare": "husky",
-    "build:android:local": "npx expo prebuild --platform android && cd android && ./gradlew assembleDebug"
+    "build:android:local": "npx expo prebuild --platform android && cd android && .\\gradlew assembleDebug"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

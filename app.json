@@ -1,23 +1,22 @@
 {
   "expo": {
-    "name": "Mileage Calculator",
+    "name": "Kinetic: Mileage & Fuel Calculator",
     "slug": "milage-app",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/mipmap-xxxhdpi/ic_launcher.png",
     "scheme": "milageapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/mipmap-xxxhdpi/ic_launcher.png",
       "imageWidth": 200,
       "resizeMode": "contain",
       "backgroundColor": "#09090E"
     },
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "icon": "./assets/images/mipmap-xxxhdpi/ic_launcher.png",
-      "buildNumber": "5"
+      "buildNumber": "6"
     },
     "android": {
       "icon": "./assets/images/mipmap-xxxhdpi/ic_launcher.png",
@@ -28,7 +27,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.asifansari.mileagecalculator",
-      "versionCode": 5
+      "versionCode": 6
     },
     "web": {
       "output": "static",

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import Constants from 'expo-constants';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function AboutScreen() {
@@ -37,7 +38,7 @@ export default function AboutScreen() {
           </Text>
         </View>
 
-        <Text style={styles.version}>Version 1.0.2</Text>
+        <Text style={styles.version}>Version {Constants.expoConfig?.version || '1.0.4'}</Text>
       </ScrollView>
     </View>
   );
